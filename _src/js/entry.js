@@ -3,6 +3,8 @@ const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecogni
 const btn = document.getElementById('btn-start');
 const output = document.getElementById('output');
 
+let isRec = false;
+
 const synthes = new SpeechSynthesisUtterance();
 //synthes.text = 'そうですね';
 synthes.text = 'こんにちは';
@@ -10,14 +12,53 @@ synthes.lang = 'ja-JP';
 synthes.addEventListener('end', (evt) => {
     console.log(evt.utterance.text);
     log('me: ' + evt.utterance.text);
+
+    recognition.start();
 });
-speechSynthesis.speak(synthes);
+//speechSynthesis.speak(synthes);
 
 
 const recognition = new SpeechRecognition();
 recognition.lang = 'ja';
+recognition.continuous = true;
+recognition.interimResults = false;
 
+recognition.addEventListener('start', () => {
+    console.log('start');
+    recognition.continuous = true;
+    isRec = true;
+    btn.innerText = 'STOP';
+});
+recognition.addEventListener('end', () => {
+    console.log('end');
+    isRec = false;
+    btn.innerText = 'START';
+});
+recognition.addEventListener('nomatch', (evt) => {
+    console.log('nomatch');
+});
+recognition.addEventListener('soundstart', (evt) => {
+    console.log('soundstart');
+});
+recognition.addEventListener('soundend', (evt) => {
+    console.log('soundend');
+});
+recognition.addEventListener('speechstart', (evt) => {
+    console.log('speechstart');
+    recognition.continuous = false;
+});
+recognition.addEventListener('speechend', (evt) => {
+    console.log('speechend');
+});
+recognition.addEventListener('audiostart', (evt) => {
+    console.log('audiostart');
+});
+recognition.addEventListener('audioend', (evt) => {
+    console.log('audioend');
+});
 recognition.addEventListener('result', (evt) => {
+    console.log('result');
+    recognition.stop();
     const transcriptList = getTranscriptList(evt.results);
     const transcripts = transcriptList.join('、');
 
@@ -29,7 +70,14 @@ recognition.addEventListener('result', (evt) => {
 });
 
 btn.addEventListener('click', () => {
-    recognition.start();
+    if (isRec) {
+        recognition.stop();
+    }
+    else {
+        synthes.text = 'こんにちは';
+        speechSynthesis.speak(synthes);
+        //recognition.start();
+    }
 }, false);
 
 
